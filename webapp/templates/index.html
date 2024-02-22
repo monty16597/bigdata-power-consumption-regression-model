@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Power Consumption Prediction</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Power Consumption Prediction</h1>
+        <form id="data-form" onsubmit="return submitForm()">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="temperature">Temperature (Celcius):</label>
+                    <input type="range" class="form-control-range" id="temperature" name="temperature" min="0" max="100" oninput="displaySliderValue('temperature', 'temperatureValue')">
+                    <label id="temperatureValue">0</label>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <label for="humidity">Humidity (Percentage):</label>
+                    <input type="range" class="form-control-range" id="humidity" name="humidity" min="0" max="100" oninput="displaySliderValue('humidity', 'humidityValue')">
+                    <label id="humidityValue">0</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="wind_speed">Wind Speed (m/s):</label>
+                    <input type="range" class="form-control-range" id="wind_speed" name="wind_speed" min="0" max="50" oninput="displaySliderValue('wind_speed', 'windSpeedValue')">
+                    <label id="windSpeedValue">0</label>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <label for="general_diffuse_flows">General Diffuse Flows (m^3/s):</label>
+                    <input type="range" class="form-control-range" id="general_diffuse_flows" name="general_diffuse_flows" min="0" max="1" step="0.01" oninput="displaySliderValue('general_diffuse_flows', 'generalDiffuseFlowsValue')">
+                    <label id="generalDiffuseFlowsValue">0</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="diffuse_flows">Diffuse Flows (m^3/s):</label>
+                    <input type="range" class="form-control-range" id="diffuse_flows" name="diffuse_flows" min="0" max="1" step="0.01" oninput="displaySliderValue('diffuse_flows', 'diffuseFlowsValue')">
+                    <label id="diffuseFlowsValue">0</label>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <label for="zone">Zone:</label>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="zoneDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Select Zone
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="zoneDropdown">
+                            <a class="dropdown-item" href="#" data-value="zone_1">Zone 1</a>
+                            <a class="dropdown-item" href="#" data-value="zone_2">Zone 2</a>
+                            <a class="dropdown-item" href="#" data-value="zone_3">Zone 3</a>
+                        </div>
+                        <input type="hidden" name="zone" id="selectedZone" value="">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="timestamp">Timestamp:</label>
+                <input type="datetime-local" class="form-control" id="timestamp" name="timestamp">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <p id="prediction" class="mt-3"></p>
+    </div>
+
+    <!-- Bootstrap JS and jQuery (required for Bootstrap) -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function displaySliderValue(sliderId, valueId) {
+            var slider = document.getElementById(sliderId);
+            var value = document.getElementById(valueId);
+            value.innerHTML = slider.value;
+            slider.oninput = function() {
+                value.innerHTML = this.value;
+            };
+        }
+
+        function submitForm() {
+            var formData = new FormData(document.getElementById("data-form"));
+            fetch('/submit_data', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("prediction").innerHTML = "Predicted Power Consumption: " + data.prediction + " kW";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            return false;
+        }
+
+        // Script to handle dropdown item selection
+        var dropdownItems = document.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(function(item) {
+            item.addEventListener('click', function() {
+                var selectedZone = item.getAttribute('data-value');
+                document.getElementById('selectedZone').value = selectedZone;
+                document.getElementById('zoneDropdown').innerText = item.innerText;
+            });
+        });
+    </script>
+</body>
+</html>
